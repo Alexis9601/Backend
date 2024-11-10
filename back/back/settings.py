@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user',
     'validation_code',
+    'poi',
+    'itinerary',
     'rest_framework',
     'rest_framework_simplejwt',
 ]

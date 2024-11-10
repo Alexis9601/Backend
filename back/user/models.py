@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 
@@ -18,11 +20,12 @@ class UserManager(BaseUserManager):
         return self.create_user(user_name, user_lastname, email, password, **extra_fields)
 
 class User(AbstractBaseUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_name = models.CharField(max_length=255)
-    user_lastname = models.CharField(max_length=255)
+    user_lastname = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
-    photo = models.CharField(max_length=1000, null=True, blank=True)
+    photo = models.TextField(null=True, blank=True)
     birthdate = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=255)
@@ -33,8 +36,14 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'email'  # El campo que se usará para autenticar
     REQUIRED_FIELDS = ['user_name', 'user_lastname']  # Campos requeridos para crear un superusuario
 
+    @property
+    def full_name(self):
+        if self.user_lastname:
+            return f"{self.user_name} {self.user_lastname}"
+        return self.user_name
+
     class Meta:
-        db_table = 'user'
+        db_table = 'users'
 
     def __str__(self):
         return self.email

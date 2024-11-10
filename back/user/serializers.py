@@ -11,10 +11,8 @@ class UserRegistrationSerializer(serializers.Serializer):
     )
     user_lastname = serializers.CharField(
         max_length=255,
-        error_messages={
-            "required": "El apellido es obligatorio.",
-            "blank": "El apellido no puede estar vacío."
-        }
+        required=False,
+        allow_blank=True
     )
     birthdate = serializers.DateField(
         error_messages={
@@ -67,3 +65,8 @@ class UserRegistrationSerializer(serializers.Serializer):
             user.photo = validated_data['photo']
         user.save()
         return user
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'user_name', 'user_lastname', 'email', 'photo']

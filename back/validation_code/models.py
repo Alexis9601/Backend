@@ -2,7 +2,7 @@ from django.db import models
 from user.models import User
 
 class ValidationCode(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     code = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 

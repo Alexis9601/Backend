@@ -4,8 +4,11 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils import timezone
 
-from user.serializers import UserRegistrationSerializer
+from user.serializers import UserRegistrationSerializer, UserSerializer
+import logging
+logger = logging.getLogger(__name__)
 
 
 def register_user(request):
@@ -31,14 +34,52 @@ def login(request):
     user = authenticate(request, email=email, password=password)
     if user is not None:
         if user.status != "ACTIVE":
-            return Response({'messsage': 'Usuario no activado'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'message': 'Usuario no activado'}, status=status.HTTP_401_UNAUTHORIZED)
         refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+        expires_in = (access_token['exp'] - timezone.now().timestamp())
         return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
+            'access': str(access_token),
+            'expires_in': int(expires_in)
         }, status=status.HTTP_200_OK)
     else:
-        return Response({'messsage': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'message': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+def basic_info(user):
+    return Response({
+        'id': user.id,
+        'fullname': user.full_name,
+        'name': user.user_name,
+        'last_name': user.user_lastname,
+        'photo': user.photo,
+        'email': user.email,
+        'birthdate': user.birthdate.strftime('%d/%m/%Y'),
+    }, status=200)
+
+def update_user(user, data):
+    user_name = data.get('name', None)
+    user_last_name = data.get('last_name', None)
+    photo = data.get('photo', None)
+    updated = False
+    if user_name is not None:
+        user.user_name = user_name
+        updated = True
+    if user_last_name is not None:
+        user.user_lastname = user_last_name
+        updated = True
+    if photo is not None:
+        user.photo = photo
+        updated = True
+    if updated:
+        user.save()
+        return Response({
+            'message': 'Información de usuario actualizada con éxito',
+            'user': UserSerializer(user).data
+        }, status=status.HTTP_200_OK)
+    return Response({
+        'message': 'No se logró actualizar la información del usuario.',
+        'user': None
+    }, status=status.HTTP_400_BAD_REQUEST)
 
 def get_string_hash(password):
     hash_obj = hashlib.sha256(password.encode())

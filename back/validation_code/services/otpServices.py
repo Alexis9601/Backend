@@ -47,7 +47,7 @@ def create_otp(user_id):
         "email": user.email
     }
 
-    send_otp_email(mail_data)
+    #send_otp_email(mail_data)
     return Response({
         "message": "OTP generado exitosamente."
     }, status=201)
