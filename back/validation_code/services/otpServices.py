@@ -88,6 +88,11 @@ def otp_validation(user_id, otp):
             return Response({
                 "message": "Ocurrio un error al activar el usuario."
             }, status=500)
+    else:
+        validation_code.delete()
+        return Response({
+            "message": "Código incorrecto. Solicite uno nuevo."
+        }, status=400)
 
 def create_recover_otp(email):
     try:
@@ -118,3 +123,40 @@ def create_recover_otp(email):
         "success": True,
         "error": None
     }, status=200)
+
+def otp_recover_validation(email, otp):
+    if not email:
+         return Response({
+            "message": "El campo email es obligatorio."
+         }, status=400)
+    if not otp:
+         return Response({
+            "message": "El campo otp es obligatorio."
+         }, status=400)
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({
+            "message": "El correo electrónico no ha sido registrado."
+        }, status=400)
+    validation_code = ValidationCode.objects.filter(user_id=user.id).first()
+    if not validation_code:
+        return Response({
+            "message": "No existe un código asociado al usuario."
+        }, status=400)
+    time_since_created = timezone.now() - validation_code.created_at
+    if time_since_created >= timedelta(minutes=5):
+        validation_code.delete()
+        return Response({
+            "message": "El código ha expirado, por favor genere uno nuevo."
+        }, status=400)
+    if otp == validation_code.code:
+        validation_code.delete()
+        return Response({
+            "message": None
+        }, status=200)
+    else:
+        validation_code.delete()
+        return Response({
+            "message": "Código incorrecto. Solicite uno nuevo."
+        }, status=400)

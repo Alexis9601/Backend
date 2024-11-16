@@ -263,3 +263,22 @@ def get_all_by_user(user):
             "itineraries": None,
             "error": "Ocurrio un error al obtener los itinerarios"
         }, status=400)
+
+def delete_by_id(id):
+    if not id:
+        return Response({
+            "success": False,
+            "error": "El campo id es obligatorio."
+        }, status=400)
+    try:
+        itinerary = Itinerary.objects.get(id=id)
+    except Itinerary.DoesNotExist:
+        return Response({
+            "success": False,
+            "message": "No se pudó obtener el itinerario."
+        }, status=400)
+    itinerary.delete()
+    return Response({
+            "success": True,
+            "message": None
+    }, status=200)
