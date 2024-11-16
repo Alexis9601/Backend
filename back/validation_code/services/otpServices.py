@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.template.loader import render_to_string
 from django.utils import timezone
 from rest_framework.response import Response
 from user.models import User
@@ -8,6 +9,16 @@ import string
 from validation_code.models import ValidationCode
 from emails.services.email_services import send_otp_email
 
+def update_or_create_validation_code(user, otp_code):
+    validation_code = ValidationCode.objects.filter(user_id=user.id).first()
+
+    if validation_code:
+        validation_code.code = otp_code
+        validation_code.created_at = timezone.now()
+        validation_code.save()
+    else:
+        validation_code = ValidationCode.objects.create(user_id=user, code=otp_code)
+        validation_code.save()
 
 def generate_otp(length=6):
     characters = string.digits
@@ -31,15 +42,7 @@ def create_otp(user_id):
         }, status=400)
 
     otp_code = generate_otp()
-    validation_code = ValidationCode.objects.filter(user_id=user.id).first()
-
-    if validation_code:
-        validation_code.code = otp_code
-        validation_code.created_at = timezone.now()
-        validation_code.save()
-    else:
-        validation_code = ValidationCode.objects.create(user_id=user, code=otp_code)
-        validation_code.save()
+    update_or_create_validation_code(user, otp_code)
 
     mail_data = {
         "otp": otp_code,
@@ -47,7 +50,7 @@ def create_otp(user_id):
         "email": user.email
     }
 
-    #send_otp_email(mail_data)
+    send_otp_email(mail_data, "template.html")
     return Response({
         "message": "OTP generado exitosamente."
     }, status=201)
@@ -85,3 +88,33 @@ def otp_validation(user_id, otp):
             return Response({
                 "message": "Ocurrio un error al activar el usuario."
             }, status=500)
+
+def create_recover_otp(email):
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({
+            "success": False,
+            "error": "El correo electrónico no ha sido registrado."
+        }, status=404)
+
+    if user.status == 'PENDING':
+        return Response({
+            "success": False,
+            "error": "El usuario no puede generar un otp."
+        }, status=400)
+
+    otp_code = generate_otp()
+    update_or_create_validation_code(user, otp_code)
+
+    mail_data = {
+        "otp": otp_code,
+        "user_name": user.user_name,
+        "email": user.email
+    }
+
+    send_otp_email(mail_data, "recover.html")
+    return Response({
+        "success": True,
+        "error": None
+    }, status=200)

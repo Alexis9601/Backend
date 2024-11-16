@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils import timezone
 
+from user.models import User
 from user.serializers import UserRegistrationSerializer, UserSerializer
 import logging
 logger = logging.getLogger(__name__)
@@ -80,6 +81,21 @@ def update_user(user, data):
         'message': 'No se logró actualizar la información del usuario.',
         'user': None
     }, status=status.HTTP_400_BAD_REQUEST)
+
+def update_password(email, password):
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({
+            "success": False,
+            "error": "No se pudo encontrar al usuario solicitado."
+        }, status=400)
+    user.password = password
+    user.save()
+    return Response({
+        "success": True,
+        "error": None
+    }, status=200)
 
 def get_string_hash(password):
     hash_obj = hashlib.sha256(password.encode())
