@@ -1,5 +1,9 @@
+import os
+
+from django.conf import settings
 from rest_framework import serializers
 from .models import User
+import base64
 
 class UserRegistrationSerializer(serializers.Serializer):
     user_name = serializers.CharField(
@@ -12,7 +16,8 @@ class UserRegistrationSerializer(serializers.Serializer):
     user_lastname = serializers.CharField(
         max_length=255,
         required=False,
-        allow_blank=True
+        allow_blank=True,
+        allow_null=True
     )
     birthdate = serializers.DateField(
         error_messages={
@@ -35,10 +40,16 @@ class UserRegistrationSerializer(serializers.Serializer):
         }
     )
     photo = serializers.CharField(
-        max_length=255,
         required=False,
-        allow_blank=True  # Este campo es opcional, por lo tanto, puede estar vacío si no se proporciona.
+        allow_blank=True,
+        allow_null=True
     )
+    flow = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True
+    )
+
 
     def validate_password(self, value):
         if not value.strip():
@@ -61,8 +72,13 @@ class UserRegistrationSerializer(serializers.Serializer):
             password=validated_data['password'],
             status='PENDING'
         )
-        if 'photo' in validated_data:
+        if validated_data['flow'] == "Google":
             user.photo = validated_data['photo']
+        else:
+            image_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'photo.jpeg')
+            with open(image_path, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            user.photo = encoded_string
         user.save()
         return user
 

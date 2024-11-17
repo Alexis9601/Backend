@@ -4,7 +4,7 @@ user/__pycache__/
 user/migrations/
 validation_code/__pycache__/
 validation_code/migrations/
-.env
+env
 .mypy_cache/
 
 .DS_Store
