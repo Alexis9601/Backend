@@ -72,7 +72,7 @@ class UserRegistrationSerializer(serializers.Serializer):
             password=validated_data['password'],
             status='PENDING'
         )
-        if validated_data['flow'] == "Google":
+        if validated_data['flow'] == "google":
             user.photo = validated_data['photo']
             user.status = 'ACTIVE'
         else:
