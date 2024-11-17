@@ -74,6 +74,7 @@ class UserRegistrationSerializer(serializers.Serializer):
         )
         if validated_data['flow'] == "Google":
             user.photo = validated_data['photo']
+            user.status = 'ACTIVE'
         else:
             image_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'photo.jpeg')
             with open(image_path, "rb") as image_file:
