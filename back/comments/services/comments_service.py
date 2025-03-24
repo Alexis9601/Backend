@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.core.paginator import Paginator
-from rest_framework.pagination import PageNumberPagination
+from django.db.models import Count
 from rest_framework.response import Response
 
 from comments.models import Comments
@@ -10,12 +10,13 @@ def register_comment(request):
     try:
         data = request.data
 
-        if 'liked' not in data:
+        if 'liked' not in data or 'type' not in data:
             return Response({"success": False, "error": "Faltan campos obligatorios"}, status=200)
 
         Comments.objects.create(
             liked=data['liked'],
             comments=data.get('comments', ''),
+            type=data.get('type'),
             user_id=request.user
         )
 
@@ -73,11 +74,15 @@ def get_comment_counts(request):
         if end_date:
             filters["created_at__lte"] = datetime.strptime(end_date, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
 
-        comment_count = Comments.objects.filter(**filters).count()
+        comment_counts = Comments.objects.filter(**filters).values("type").annotate(count=Count("id"))
+
+        # Formatear resultado en un diccionario con los valores esperados
+        response_data = {tipo: 0 for tipo in ["HORARIO", "TIEMPO", "CATEGORIA", "OTRO"]}
+        response_data.update({entry["type"]: entry["count"] for entry in comment_counts})
 
         return Response({
             "success": True,
-            "commentCount": comment_count,
+            "commentCounts": response_data,
             "error": None
         }, status=200)
 
@@ -93,6 +98,7 @@ def get_comments_list(request):
         size = int(data.get("size", 10))
 
         filters = {
+            "type": "OTRO",
             "comments__isnull": False,
             "comments__gt": ""
         }
