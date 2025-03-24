@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'validation_code',
     'poi',
     'itinerary',
+    'comments',
     'rest_framework',
     'rest_framework_simplejwt',
 ]

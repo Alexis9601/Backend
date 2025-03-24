@@ -1,5 +1,6 @@
 from django.urls import path
 
+from comments.views import comments_registration, liked_count, comments_count, get_comments
 from itinerary.views import get_today_itineraries, generate_itineraries, save_itinerary, get_day, get_user_itineraries, \
     delete_itinerary
 from user.views import user_registration, login_user, user_basic_info, update, update_user_password
@@ -21,4 +22,8 @@ urlpatterns = [
     path('itinerary/getByDay/<uuid:id>', get_day, name='get-day'),
     path('itinerary/itineraries', get_user_itineraries, name='get-user-itineraries'),
     path('itinerary/<uuid:id>', delete_itinerary, name='delete-itinerary'),
+    path('comments/register', comments_registration, name='comments-registration'),
+    path('comments/likedCount', liked_count, name='licked-count'),
+    path('comments/commentsCount', comments_count, name='comments-count'),
+    path('comments/getComments', get_comments, name='get-comments')
 ]
