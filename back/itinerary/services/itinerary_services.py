@@ -117,7 +117,8 @@ def generate(request):
 
                 pois = list(POI.objects.all())
                 random.shuffle(pois)
-                selected_pois = pois[:total_hours]
+                num_selected = random.randint(3, 5)
+                selected_pois = pois[:num_selected]
 
                 day_destinations = []
                 current_time = day_start_datetime
@@ -195,12 +196,14 @@ def save(request):
                 json_day["itinerary_pois"].append(get_itinerary_pois(poi, itinerary_poi))
             days.append(json_day)
         json_itinerary["days"] = days
+        #print(json_itinerary)
         return Response({
             "success": True,
             "itinerary": json_itinerary,
             "error": None
         }, status=200)
     except Exception as e:
+        print(e)
         return Response({
             "success": False,
             "itinerary": None,

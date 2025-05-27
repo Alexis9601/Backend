@@ -12,7 +12,6 @@ def get_today_itineraries(request):
     return get_itineraries(request.user)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def generate_itineraries(request):
     return generate(request)
 

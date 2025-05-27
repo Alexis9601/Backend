@@ -101,10 +101,10 @@ WSGI_APPLICATION = 'back.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ItineraryApp',
+        'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
+        'PASSWORD': 'itinerarios12345',
+        'HOST': 'db.dfbrazdcvlwnwlmlaxpm.supabase.co',
         'PORT': '5432',
     }
 }
