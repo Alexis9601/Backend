@@ -18,6 +18,11 @@ def get_day_from_model(day):
 
 def get_itinerary_pois(poi, itinerary_poi):
     photos = POIPhoto.objects.filter(poi=poi).values_list('photo_url', flat=True)
+    local_tz = pytz.timezone("America/Mexico_City")
+
+    arrival_local = itinerary_poi.arrival_time.astimezone(local_tz)
+    departure_local = itinerary_poi.departure_time.astimezone(local_tz)
+
     return {
         "id": poi.id,
         "name": poi.name,
@@ -25,8 +30,8 @@ def get_itinerary_pois(poi, itinerary_poi):
         "longitude": poi.longitude,
         "address": poi.address,
         'order': itinerary_poi.order,
-        'arrival_time': itinerary_poi.arrival_time.strftime('%d/%m/%Y %I:%M %p'),
-        'departure_time': itinerary_poi.departure_time.strftime('%d/%m/%Y %I:%M %p'),
+        'arrival_time': arrival_local.strftime('%d/%m/%Y %I:%M %p'),
+        'departure_time': departure_local.strftime('%d/%m/%Y %I:%M %p'),
         "category": poi.category,
         "rating": poi.rating,
         "photos": photos,
