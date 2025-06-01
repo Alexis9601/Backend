@@ -7,6 +7,7 @@ from django.utils.timezone import make_aware
 from itinerary.models import Itinerary, ItineraryPOI, Day
 from poi.models import POI, POIPhoto
 import random
+import pytz
 
 def get_day_from_model(day):
     return {
@@ -176,6 +177,8 @@ def save(request):
 
         days = []
 
+        local_tz = pytz.timezone("America/Mexico_City")
+
         for day_data in request.data["days"]:
             day = Day.objects.create(
                 itinerary_id=itinerary,
@@ -189,8 +192,8 @@ def save(request):
                 itinerary_poi = ItineraryPOI.objects.create(
                     day_id=day,
                     destination_id=poi,
-                    arrival_time=make_aware(datetime.strptime(destination_data["arrival_time"], "%d/%m/%Y %I:%M %p")),
-                    departure_time=make_aware(datetime.strptime(destination_data["departure_time"], "%d/%m/%Y %I:%M %p")),
+                    arrival = local_tz.localize(datetime.strptime(destination_data["arrival_time"], "%d/%m/%Y %I:%M %p")),
+                    departure = local_tz.localize(datetime.strptime(destination_data["departure_time"], "%d/%m/%Y %I:%M %p")),
                     order=index
                 )
                 json_day["itinerary_pois"].append(get_itinerary_pois(poi, itinerary_poi))
