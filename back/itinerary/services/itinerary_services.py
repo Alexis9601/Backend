@@ -197,8 +197,8 @@ def save(request):
                 itinerary_poi = ItineraryPOI.objects.create(
                     day_id=day,
                     destination_id=poi,
-                    arrival = local_tz.localize(datetime.strptime(destination_data["arrival_time"], "%d/%m/%Y %I:%M %p")),
-                    departure = local_tz.localize(datetime.strptime(destination_data["departure_time"], "%d/%m/%Y %I:%M %p")),
+                    arrival_time = local_tz.localize(datetime.strptime(destination_data["arrival_time"], "%d/%m/%Y %I:%M %p")),
+                    departure_time = local_tz.localize(datetime.strptime(destination_data["departure_time"], "%d/%m/%Y %I:%M %p")),
                     order=index
                 )
                 json_day["itinerary_pois"].append(get_itinerary_pois(poi, itinerary_poi))
